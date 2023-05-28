@@ -1,4 +1,4 @@
-import CartIcon from '../../Cart/CartIcon';
+import CartIcon from '../../Cart/CartSummary/CartIcon';
 import classes from './HeaderCartBtn.module.css';
 import CartModal from '../../Cart/CartModal';
 import { useContext, useEffect, useState } from 'react';

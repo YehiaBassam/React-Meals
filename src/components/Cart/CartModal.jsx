@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useContext } from 'react';
 import { Button, Modal } from 'react-bootstrap';
 import classes from './CartModal.module.css';
-import CartItem from './CartItem';
+import CartItem from './CartSummary/CartItem';
 import cartContext from '../../store/Cart-Context';
 
 // const CartModal = ({ showModal }) => {
