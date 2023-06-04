@@ -19,7 +19,7 @@ const schema = yup.object().shape({
   
   const Checkout = (props) => {
   // Validations
-  const { register, handleSubmit, trigger, formState: { errors }} = useForm({ resolver: yupResolver(schema) });
+  const { register, handleSubmit, trigger, watch, formState: { errors }} = useForm({ resolver: yupResolver(schema) });
 
   // State
   const [isToastShow, setIsToastShow] = useState(false);
@@ -35,21 +35,28 @@ const schema = yup.object().shape({
   const phoneRef = useRef();
   
   // Submit
-  const submitOrder = (event) => {
-    event.preventDefault();
-    const name = nameRef.current.value;
-    const email = emailRef.current.value;
-    const postal = postalRef.current.value;
-    const password = passwordRef.current.value;
-    const phoneValue = phoneRef.current?.value;
+  const submitOrder = (e) => {
+    console.log('e', e);
+    // e.preventDefault();
+    const name = e.name
+    const email = e.email;
+    const postal = e.postal;
+    const password = e.password;
+    const phoneValue = e.confirmPassword;
+    // const name = nameRef.current.value;
+    // const email = emailRef.current.value;
+    // const postal = postalRef.current.value;
+    // const password = passwordRef.current.value;
+    // const phoneValue = phoneRef.current?.value;
     
     // if (!name || !email || !postal || !password || (isPhoneToggle && !phoneValue)){
-    //   showToast('Failed !!', 'please, fill all inputs', 'danger');
-    // } 
-    // else {
-      let phone = isPhoneToggle ? phoneValue : null;
+      //   showToast('Failed !!', 'please, fill all inputs', 'danger');
+      // } 
+      // else {
+        let phone = isPhoneToggle ? phoneValue : null;
+        console.log('object', {name, email, postal, password, phone});
       snedOrder({name, email, postal, password, phone});
-      event.target.reset(); 
+      // e.target.reset(); 
     // }
   };
   
@@ -98,7 +105,7 @@ const schema = yup.object().shape({
       <div className={ errors.postal ? `${classes.control} ${classes.invalid}` : `${classes.control}`}>
         <label htmlFor="postal">Postal Code</label>
         <input type="number" id="postal" ref={postalRef} {...register('postal')}/>
-        <p className="text-danger"> { errors.postal?.message } </p>
+        <p className="text-danger"> { errors.postal?.type === 'typeError' ? 'must be number' : errors.postal?.message  } </p>
       </div>
       <div className={ errors.password ? `${classes.control} ${classes.invalid}` : `${classes.control}`}>
         <label htmlFor="password">password</label>
@@ -121,12 +128,37 @@ const schema = yup.object().shape({
         isPhoneToggle &&  
         <div className={ errors.phone ? `${classes.control} ${classes.invalid}` : `${classes.control}`}>
           <label htmlFor="phone">phone</label>
-          <input type="tel" id="phone" ref={phoneRef} 
+          <input type="tel" name="phone" ref={phoneRef} 
             {...register('phone', { required: true })}
             // {...register('phone', {
             //   required: watch('isPhoneToggle', true), // Validate only if the isPhoneToggle == true
             // })}
           />
+
+          {/* <input type="tel" id="phone" ref={phoneRef} 
+            {...register('phone', { required: true })}
+            // {...register('phone', {
+            //   required: watch('isPhoneToggle', true), // Validate only if the isPhoneToggle == true
+            // })}
+          /> */}
+
+          {/* {watch(isPhoneToggle, false) && <input type="tel" {...register("phone", { required: true })} />} */}
+
+
+          {/* <input
+            ref={register({
+              validate: {
+                required: value => {
+                  if (!value && isPhoneToggle) return 'Required when username is provided';
+                  // if (!value && getValues('username')) return 'Required when username is provided';
+                  return true;
+                },
+              },
+            })}
+            name="phone"
+            type="tel"
+          /> */}
+
           <p className="text-danger"> { errors.phone?.message } </p>
         </div>
       }
