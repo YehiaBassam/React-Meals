@@ -1,5 +1,5 @@
 import { useContext, useRef } from "react";
-import CustomInput from "../../Shared/CustomInput";
+import CustomInput from "../../Shared/CustomInput/CustomInput";
 import classes from './MealForm.module.css';
 import cartContext from "../../../store/Cart-Context";
 

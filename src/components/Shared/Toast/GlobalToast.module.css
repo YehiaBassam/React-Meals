@@ -1,0 +1,5 @@
+.toast-wrapper{
+  right: 20px;
+  top: 30px ;
+  z-index: 1000000;
+}

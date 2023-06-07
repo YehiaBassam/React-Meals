@@ -1,10 +1,6 @@
 import { createContext, useState } from "react";
 
-const cartContext = createContext({
-  items: [],
-  totalAmount: 0,
-  totalQuantity: 0,
-});
+const cartContext = createContext();
 
 export function CartContextProvider(props){
   const [ items, setItems ] = useState([]);

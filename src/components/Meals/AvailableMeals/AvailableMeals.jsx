@@ -1,5 +1,5 @@
 import classes from "./AvailableMeals.module.css";
-import Card from "../../Shared/Card";
+import Card from "../../Shared/Card/Card";
 import MealItem from "../MealItem/MealItem";
 import { Spinner } from "react-bootstrap/";
 import { useEffect, useState } from "react";

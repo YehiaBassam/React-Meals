@@ -2,7 +2,7 @@ import { useState, useRef, useContext } from "react";
 import classes from "./Checkout.module.css";
 import axios from "axios";
 import cartContext from "../../../store/Cart-Context";
-import { Toast } from 'react-bootstrap';
+import { ToastContext } from "../../../store/Toast-Context";
 
 import { useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
@@ -14,19 +14,16 @@ const schema = yup.object().shape({
   postal: yup.number('must be number').test('len', 'Must be greater 2 digits', val => val.toString().length > 2).positive().integer().required("required"),
   password: yup.string().min(8,"min 8 :)").max(999999999,"max 999999999 :)").required(),
   confirmPassword: yup.string().oneOf([yup.ref("password"), "not match with password"]).required("required"),
-  phone: yup.string().matches(/^[\+]?[(]?[0-9]{3}[)]?[-\s\.]?[0-9]{3}[-\s\.]?[0-9]{4,6}$/im, "must be a phone number").required(),
+  phone: yup.string().matches(/^[+]?[(]?[0-9]{3}[)]?[-\s.]?[0-9]{3}[-\s.]?[0-9]{4,6}$/im, "must be a phone number").required(),
 })
   
   const Checkout = (props) => {
   // Validations
-  const { register, handleSubmit, trigger, watch, formState: { errors }} = useForm({ resolver: yupResolver(schema) });
-
-  // State
-  const [isToastShow, setIsToastShow] = useState(false);
-  const [toast, setToast] = useState({});
+  const { register, handleSubmit, formState: { errors }} = useForm({ resolver: yupResolver(schema) });
+  
   const [isPhoneToggle, setIsPhoneToggle] = useState(false);
-
   const cartctx = useContext(cartContext);
+  const { openToast } = useContext(ToastContext);
   const nameRef = useRef();
   const emailRef = useRef();
   const postalRef = useRef();
@@ -36,8 +33,6 @@ const schema = yup.object().shape({
   
   // Submit
   const submitOrder = (e) => {
-    console.log('e', e);
-    // e.preventDefault();
     const name = e.name
     const email = e.email;
     const postal = e.postal;
@@ -55,8 +50,8 @@ const schema = yup.object().shape({
       // else {
         let phone = isPhoneToggle ? phoneValue : null;
         console.log('object', {name, email, postal, password, phone});
-      snedOrder({name, email, postal, password, phone});
-      // e.target.reset(); 
+        snedOrder({name, email, postal, password, phone});
+        // e.target.reset(); 
     // }
   };
   
@@ -75,22 +70,15 @@ const schema = yup.object().shape({
     axios.post(url, data)
       .then((res) => {
         res.status === 200 &&
-        showToast('Success !!', 'Send To Firebase Successfully', 'success');
-      })
-    };
-    
-    // Show Toast
-    const showToast = (status, message, variant) => {
-      setIsToastShow(true);
-      setToast({
-        status ,
-        message ,
-        variant ,
+        openToast({
+          variant: 'success',
+          status: 'Success !!',
+          message: 'Send To Firebase Successfully',
+        });
       })
     };
     
   return (
-    <>
     <form className={classes.form} onSubmit={handleSubmit(submitOrder)}>
       <div className={ errors.name ? `${classes.control} ${classes.invalid}` : `${classes.control}`}>
         <label htmlFor="name">Your Name</label>
@@ -120,7 +108,7 @@ const schema = yup.object().shape({
       <button 
         type="button" 
         className={`btn my-4 ${isPhoneToggle ? 'btn-danger' : 'btn-success'}`} 
-        onClick={() => {setIsPhoneToggle(!isPhoneToggle); trigger('phone');}}
+        onClick={() => {setIsPhoneToggle(!isPhoneToggle)}}
       >
         { isPhoneToggle ? 'Remove Phone' : 'Add Phone' }
       </button>
@@ -168,15 +156,6 @@ const schema = yup.object().shape({
         <button className={classes.submit}>Confirm</button>
       </div>
     </form>
-
-    <Toast onClose={() => setIsToastShow(false)} show={isToastShow} delay={3000} autohide bg={toast.variant}>
-      <Toast.Header>
-        <strong className="me-auto">{toast.status}</strong>
-        <small>Now</small>
-      </Toast.Header>
-      <Toast.Body>{toast.message}</Toast.Body>
-    </Toast>
-    </>
   );
 };
 
