@@ -19,7 +19,7 @@ const schema = yup.object().shape({
   
   const Checkout = (props) => {
   // Validations
-  const { register, handleSubmit, formState: { errors }} = useForm({ resolver: yupResolver(schema) });
+  const { register, handleSubmit, reset, formState: { errors }} = useForm({ resolver: yupResolver(schema) });
   
   const [isPhoneToggle, setIsPhoneToggle] = useState(false);
   const cartctx = useContext(cartContext);
@@ -38,21 +38,11 @@ const schema = yup.object().shape({
     const postal = e.postal;
     const password = e.password;
     const phoneValue = e.confirmPassword;
-    // const name = nameRef.current.value;
-    // const email = emailRef.current.value;
-    // const postal = postalRef.current.value;
-    // const password = passwordRef.current.value;
-    // const phoneValue = phoneRef.current?.value;
+    let phone = isPhoneToggle ? phoneValue : null;
     
-    // if (!name || !email || !postal || !password || (isPhoneToggle && !phoneValue)){
-      //   showToast('Failed !!', 'please, fill all inputs', 'danger');
-      // } 
-      // else {
-        let phone = isPhoneToggle ? phoneValue : null;
-        console.log('object', {name, email, postal, password, phone});
-        snedOrder({name, email, postal, password, phone});
-        // e.target.reset(); 
-    // }
+    console.log('object', {name, email, postal, password, phone});
+    snedOrder({name, email, postal, password, phone});
+    reset();
   };
   
   const snedOrder = (newData) => {
