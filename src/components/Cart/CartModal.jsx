@@ -4,7 +4,7 @@ import classes from './CartModal.module.css';
 import CartItem from './CartSummary/CartItem';
 import cartContext from '../../store/Cart-Context';
 // import Checkout from './Checkout/Checkout-ReactFormHook';
-import CheckoutFormic from './Checkout/Checkout-Formic';
+import Checkout from './Checkout/Checkout-Formic';
 
 // const CartModal = ({ showModal }) => {
 const CartModal = (props) => {
@@ -36,7 +36,7 @@ const CartModal = (props) => {
       <Modal show={show} onHide={handleClose} size='lg'>
       {
         isCheckout ? 
-          <CheckoutFormic onCancel={() => setIsCheckout(false)}/>
+          <Checkout onCancel={() => setIsCheckout(false)}/>
         :
         <div>
           <Modal.Header closeButton>

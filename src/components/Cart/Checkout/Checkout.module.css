@@ -63,3 +63,9 @@
     border-color: #aa0b20;
     background-color: #ffeff1;
 }
+
+.register-form {
+    padding: 30px;
+    max-width: 350px;
+    margin: auto;
+}

@@ -1,80 +1,52 @@
-import { useState, useRef, useContext } from "react";
-import classes from "./Checkout.module.css";
-import axios from "axios";
-import cartContext from "../../../store/Cart-Context";
-import { ToastContext } from "../../../store/Toast-Context";
+import React, { useState, useEffect } from 'react';
+import { useFormik } from 'formik';
+import * as Yup from 'yup';
+import classes from './Checkout.module.css';
+import { useContext } from 'react';
+import { ToastContext } from '../../../store/Toast-Context';
+import cartContext from '../../../store/Cart-Context';
+import axios from 'axios';
 
-import { yupResolver } from "@hookform/resolvers/yup";
-import * as yup from "yup";
-
-const schema = yup.object().shape({
-  name: yup.string().required("please enter your name"),
-  email: yup.string().email("please enter valid email").required("required"),
-  postal: yup.number('must be number').test('len', 'Must be greater 2 digits', val => val.toString().length > 2).positive().integer().required("required"),
-  password: yup.string().min(8,"min 8 :)").max(999999999,"max 999999999 :)").required(),
-  confirmPassword: yup.string().oneOf([yup.ref("password"), "not match with password"]).required("required"),
-  phone: yup.string().matches(/^[+]?[(]?[0-9]{3}[)]?[-\s.]?[0-9]{3}[-\s.]?[0-9]{4,6}$/im, "must be a phone number").required(),
-})
-  
-  const Checkout = (props) => {
-  // Validations
-  // const { register, handleSubmit, reset, formState: { errors }} = useForm({ resolver: yupResolver(schema) });
-
-
-
-  const onSubmit = async (values, actions) => {
-    console.log(values);
-    console.log(actions);
-    await new Promise ((resolve) => setTimeout (resolve, 1000));
-    actions. resetForm();
-    };
-
-
-    const BasicForm = () => {
-    const {
-    values,
-    errors,
-    touched,
-    isSubmitting,
-    handleBlur,
-    handleChange,
-    handleSubmit,
-    } = useFormik({
-    initialValues: {
-    name: "",
-    // password: "",
-    // confirmPassword: "
-    },
-    validationSchema: basicSchema,
-    onSubmit,
-  });
-
-
-
-
-
-
-
-
-  
-  const [isPhoneToggle, setIsPhoneToggle] = useState(false);
+function Checkout() {
   const cartctx = useContext(cartContext);
   const { openToast } = useContext(ToastContext);
+  const [isHiddenFieldShow, setIsHiddenFieldShow] = useState(false);
   
-  // Submit
-  const submitOrder = (e) => {
-    const name = e.name
-    const email = e.email;
-    const postal = e.postal;
-    const password = e.password;
-    const phoneValue = e.confirmPassword;
-    let phone = isPhoneToggle ? phoneValue : null;
-    
-    console.log('object', {name, email, postal, password, phone});
-    snedOrder({name, email, postal, password, phone});
-  };
-  
-  const snedOrder = (newData) => {
+  const customValidationSchema = Yup.object().shape({
+    name: Yup.string().required("please enter your name"),
+    email: Yup.string().email("please enter valid email").required("required"),
+    postal: Yup.number('must be number').test('len', 'Must be greater 2 digits', val => val.toString().length > 2).positive().integer().required("required"),
+    password: Yup.string().min(8,"min 8 :)").max(999999999,"max 999999999 :)").required(),
+    confirmPassword: Yup.string().oneOf([Yup.ref("password"), "not match with password"]).required("required"),
+    phone: Yup.string().matches(/^[+]?[(]?[0-9]{3}[)]?[-\s.]?[0-9]{3}[-\s.]?[0-9]{4,6}$/im, "must be a phone number").required(),
+    // acceptTerms: Yup.bool().oneOf([true], 'Accept Terms is required'),
+    signature: Yup.string().when("acceptTerms", {
+      is: true,
+      then: () => Yup.string().required("signature is required")
+    }),
+  });
+
+  const myFormicForm = useFormik({
+    initialValues: {
+      name: '',
+      postal: '',
+      phone: '',
+      email: '',
+      password: '',
+      confirmPassword: '',
+      signature: '',
+      acceptTerms: false,
+    },
+    validationSchema : customValidationSchema,
+    // validateOnChange: false,
+    // validateOnBlur: false,
+    onSubmit: (data) => {
+      sendOrder(data);
+      myFormicForm.handleReset();
+    },
+  });
+
+  const sendOrder = (newData) => {
     const url = "https://react-meals-7b0d3-default-rtdb.firebaseio.com/orders.json";
     // remove null values
     const FormData = Object.fromEntries( 
@@ -95,104 +67,191 @@ const schema = yup.object().shape({
           message: 'Send To Firebase Successfully',
         });
       })
-    };
-    
-    
+  };
+
+  useEffect(() => {
+    myFormicForm.values.acceptTerms ? setIsHiddenFieldShow(true) : setIsHiddenFieldShow(false);
+  }, [myFormicForm.values.acceptTerms]);
 
 
-
-
-
-<form className={classes.form} onSubmit={handleSubmit} autoComplete="off">
-
-
-
-
-      <div className={ errors.name ? `${classes.control} ${classes.invalid}` : `${classes.control}`}>
-        <label htmlFor="name">Your Name</label>
-        <input 
-          value={values.name}
-          onChange={handleChange)
-          id="name"
-          type="text"
-          placeholder="Enter your name"
-          onblur={handleBlur}
-          className={errors.name && touched.emai? "input-error":""}
-        />
-        <p className="text-danger"> { errors.name?.message } </p>
-      </div>
-      <div className={ errors.email ? `${classes.control} ${classes.invalid}` : `${classes.control}`}>
-        <label htmlFor="email">Your Email</label>
-        <input type="text" id="email" ref={emailRef} {...register('email')}/>
-        <p className="text-danger"> { errors.email?.message } </p>
-      </div>
-      <div className={ errors.postal ? `${classes.control} ${classes.invalid}` : `${classes.control}`}>
-        <label htmlFor="postal">Postal Code</label>
-        <input type="number" id="postal" ref={postalRef} {...register('postal')}/>
-        <p className="text-danger"> { errors.postal?.type === 'typeError' ? 'must be number' : errors.postal?.message  } </p>
-      </div>
-      <div className={ errors.password ? `${classes.control} ${classes.invalid}` : `${classes.control}`}>
-        <label htmlFor="password">password</label>
-        <input type="password" id="password" ref={passwordRef} {...register('password')} />
-        <p className="text-danger"> { errors.password?.message } </p>
-      </div>
-      <div className={ errors.confirmPassword ? `${classes.control} ${classes.invalid}` : `${classes.control}`}>
-        <label htmlFor="confirmPassword">confirm Password</label>
-        <input type="password" id="confirmPassword" ref={confirmPasswordRef} {...register('confirmPassword')} />
-        <p className="text-danger"> { errors.confirmPassword?.type === 'oneOf' ? 'confirm password must match password' : errors.confirmPassword?.message  } </p>
-      </div>
-      <button 
-        type="button" 
-        className={`btn my-4 ${isPhoneToggle ? 'btn-danger' : 'btn-success'}`} 
-        onClick={() => {setIsPhoneToggle(!isPhoneToggle)}}
-      >
-        { isPhoneToggle ? 'Remove Phone' : 'Add Phone' }
-      </button>
-      {
-        isPhoneToggle &&  
-        <div className={ errors.phone ? `${classes.control} ${classes.invalid}` : `${classes.control}`}>
-          <label htmlFor="phone">phone</label>
-          <input type="tel" name="phone" ref={phoneRef} 
-            {...register('phone', { required: true })}
-            // {...register('phone', {
-            //   required: watch('isPhoneToggle', true), // Validate only if the isPhoneToggle == true
-            // })}
+  return (
+    <div className={classes['register-form']}>
+      <form onSubmit={myFormicForm.handleSubmit}>
+        <div className="form-group mb-2">
+          <label htmlFor="name">Full Name</label>
+          <input
+            name="name"
+            type="text"
+            className={
+              'form-control' +
+              (myFormicForm.errors.name && myFormicForm.touched.name
+                ? ' is-invalid'
+                : myFormicForm.touched.name ? ' is-valid' : '')
+            }
+            onChange={myFormicForm.handleChange}
+            value={myFormicForm.values.name}
           />
-
-          {/* <input type="tel" id="phone" ref={phoneRef} 
-            {...register('phone', { required: true })}
-            // {...register('phone', {
-            //   required: watch('isPhoneToggle', true), // Validate only if the isPhoneToggle == true
-            // })}
-          /> */}
-
-          {/* {watch(isPhoneToggle, false) && <input type="tel" {...register("phone", { required: true })} />} */}
-
-
-          {/* <input
-            ref={register({
-              validate: {
-                required: value => {
-                  if (!value && isPhoneToggle) return 'Required when username is provided';
-                  // if (!value && getValues('username')) return 'Required when username is provided';
-                  return true;
-                },
-              },
-            })}
-            name="phone"
-            type="tel"
-          /> */}
-
-          <p className="text-danger"> { errors.phone?.message } </p>
+          <div className="invalid-feedback">
+            {myFormicForm.errors.name && myFormicForm.touched.name
+              ? myFormicForm.errors.name
+              : null}
+          </div>
         </div>
-      }
 
-      <div className={classes.actions}>
-        <button type="button" onClick={props.onCancel}>Cancel</button>
-        <button className={classes.submit}>Confirm</button>
-      </div>
-    </form>
+        <div className="form-group mb-2">
+          <label htmlFor="postal"> postal </label>
+          <input
+            name="postal"
+            type="number"
+            className={
+              'form-control' +
+              (myFormicForm.errors.postal && myFormicForm.touched.postal
+                ? ' is-invalid'
+                : myFormicForm.touched.postal ? ' is-valid' : '')
+            }
+            onChange={myFormicForm.handleChange}
+            value={myFormicForm.values.postal}
+          />
+          <div className="invalid-feedback">
+            {myFormicForm.errors.postal && myFormicForm.touched.postal
+              ? myFormicForm.errors.postal
+              : null}
+          </div>
+        </div>
+        
+        <div className="form-group mb-2">
+          <label htmlFor="phone"> phone </label>
+          <input
+            name="phone"
+            type="number"
+            className={
+              'form-control' +
+              (myFormicForm.errors.phone && myFormicForm.touched.phone
+                ? ' is-invalid'
+                : myFormicForm.touched.phone ? ' is-valid' : '')
+            }
+            onChange={myFormicForm.handleChange}
+            value={myFormicForm.values.phone}
+          />
+          <div className="invalid-feedback">
+            {myFormicForm.errors.phone && myFormicForm.touched.phone
+              ? myFormicForm.errors.phone
+              : null}
+          </div>
+        </div>
+
+        <div className="form-group mb-2">
+          <label htmlFor="email"> Email </label>
+          <input
+            name="email"
+            type="email"
+            className={
+              'form-control' +
+              (myFormicForm.errors.email && myFormicForm.touched.email
+                ? ' is-invalid'
+                : myFormicForm.touched.email ? ' is-valid' : '')
+            }
+            onChange={myFormicForm.handleChange}
+            value={myFormicForm.values.email}
+          />
+          <div className="invalid-feedback">
+            {myFormicForm.errors.email && myFormicForm.touched.email
+              ? myFormicForm.errors.email
+              : null}
+          </div>
+        </div>
+
+        <div className="form-group mb-2">
+          <label htmlFor="password"> Password </label>
+          <input
+            name="password"
+            type="password"
+            className={
+              'form-control' +
+              (myFormicForm.errors.password && myFormicForm.touched.password
+                ? ' is-invalid'
+                : myFormicForm.touched.password ? ' is-valid' : '')
+            }
+            onChange={myFormicForm.handleChange}
+            value={myFormicForm.values.password}
+          />
+          <div className="invalid-feedback">
+            {myFormicForm.errors.password && myFormicForm.touched.password
+              ? myFormicForm.errors.password
+              : null}
+          </div>
+        </div>
+
+        <div className="form-group mb-2">
+          <label htmlFor="confirmPassword"> Confirm Password </label>
+          <input
+            name="confirmPassword"
+            type="password"
+            className={
+              'form-control' +
+              (myFormicForm.errors.confirmPassword && myFormicForm.touched.confirmPassword
+                ? ' is-invalid'
+                : myFormicForm.touched.confirmPassword ? ' is-valid' : '')
+            }
+            onChange={myFormicForm.handleChange}
+            value={myFormicForm.values.confirmPassword}
+          />
+          <div className="invalid-feedback">
+            {myFormicForm.errors.confirmPassword && myFormicForm.touched.confirmPassword
+              ? myFormicForm.errors.confirmPassword
+              : null}
+          </div>
+        </div>
+
+        <div className="form-group my-3 form-check">
+          <input
+            name="acceptTerms"
+            type="checkbox"
+            className='form-check-input' 
+            onChange={myFormicForm.handleChange}
+            checked={myFormicForm.values.acceptTerms} // Note: checked not value !!
+          />
+          <label htmlFor="acceptTerms" className="form-check-label">
+            I have read and agree to the Terms
+          </label>
+          <div className="invalid-feedback">
+            {myFormicForm.errors.acceptTerms && myFormicForm.touched.acceptTerms
+              ? myFormicForm.errors.acceptTerms
+              : null}
+          </div>
+        </div>
+
+        {
+          isHiddenFieldShow &&
+          <div className="form-group mb-2">
+            <label htmlFor="signature">signature</label>
+            <input
+              name="signature"
+              type="text"
+              className={
+                'form-control' +
+                (myFormicForm.errors.signature && myFormicForm.touched.signature
+                  ? ' is-invalid'
+                  : myFormicForm.touched.signature ? ' is-valid' : '')
+              }
+              onChange={myFormicForm.handleChange}
+              value={myFormicForm.values.signature}
+            />
+            <div className="invalid-feedback">
+              {myFormicForm.errors.signature && myFormicForm.touched.signature
+                ? myFormicForm.errors.signature
+                : null}
+            </div>
+          </div>
+        }
+
+        <div className={`${classes.actions} form-group mt-3`}>
+          <button type="submit" className={`${classes.submit} btn btn-primary me-4`}>Confirm</button>
+          <button className="btn btn-warning float-right" onClick={myFormicForm.handleReset}>Reset</button>
+        </div>
+      </form>
+    </div>
   );
-};
+}
 
 export default Checkout;

@@ -41,11 +41,11 @@ const schema = yup.object().shape({
     let phone = isPhoneToggle ? phoneValue : null;
     
     console.log('object', {name, email, postal, password, phone});
-    snedOrder({name, email, postal, password, phone});
+    sendOrder({name, email, postal, password, phone});
     reset();
   };
   
-  const snedOrder = (newData) => {
+  const sendOrder = (newData) => {
     const url = "https://react-meals-7b0d3-default-rtdb.firebaseio.com/orders.json";
     // remove null values
     const FormData = Object.fromEntries( 
@@ -66,7 +66,7 @@ const schema = yup.object().shape({
           message: 'Send To Firebase Successfully',
         });
       })
-    };
+  };
     
   return (
     <form className={classes.form} onSubmit={handleSubmit(submitOrder)}>
